@@ -55,6 +55,27 @@ The original flat dataset was normalized into 5 relational tables, joined on `Em
 
 ---
 
+## 🖼️ Dashboard Preview
+
+**Overview**
+![Overview page](images/page1_overview.png)
+<img width="1888" height="1027" alt="page1_overview" src="https://github.com/user-attachments/assets/b8255037-f47f-4f17-aff5-56a193ee154a" />
+
+
+**Department & Role**
+![Department & Role page](images/page2_department_role.png)
+
+**Compensation & Tenure**
+![Compensation & Tenure page](images/page3_compensation_tenure.png)
+
+**Satisfaction & Work-Life**
+![Satisfaction & Work-Life page](images/page4_satisfaction.png)
+
+**Risk Insights**
+![Risk Insights page](images/page5_risk_insights.png)
+
+---
+
 ## 🔑 Key Insights
 
 | Finding | Detail |
@@ -84,6 +105,12 @@ The original flat dataset was normalized into 5 relational tables, joined on `Em
 │   └── hr_attrition_analysis.xlsx   # Helper columns + PivotTables
 ├── powerbi/
 │   └── hr_attrition_dashboard.pbix
+├── images/
+│   ├── page1_overview.png
+│   ├── page2_department_role.png
+│   ├── page3_compensation_tenure.png
+│   ├── page4_satisfaction.png
+│   └── page5_risk_insights.png
 └── README.md
 ```
 
