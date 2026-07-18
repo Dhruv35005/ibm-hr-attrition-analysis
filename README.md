@@ -80,7 +80,6 @@ The original flat dataset was normalized into 5 relational tables, joined on `Em
 ├── sql/
 │   ├── schema.sql              # Table definitions + foreign keys
 │   ├── queries.sql              # Core starter queries + employee_full view
-│   └── insight_queries.sql      # 18 tiered analysis queries (simple → advanced)
 ├── excel/
 │   └── hr_attrition_analysis.xlsx   # Helper columns + PivotTables
 ├── powerbi/
