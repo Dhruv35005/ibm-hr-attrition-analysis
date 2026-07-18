@@ -59,8 +59,6 @@ The original flat dataset was normalized into 5 relational tables, joined on `Em
 
 **Overview**
 ![Overview page](images/page1_overview.png)
-<img width="1888" height="1027" alt="page1_overview" src="https://github.com/user-attachments/assets/b8255037-f47f-4f17-aff5-56a193ee154a" />
-
 
 **Department & Role**
 ![Department & Role page](images/page2_department_role.png)
