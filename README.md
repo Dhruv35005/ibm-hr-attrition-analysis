@@ -1,22 +1,16 @@
 # 📊 IBM HR Attrition Analysis
 
-An end-to-end HR analytics project exploring **why employees leave** — built across **SQL, Excel, and Power BI** using the IBM HR Employee Attrition dataset (1,470 employees, 35 attributes).
+A relational data model and analytics pipeline built on the IBM HR Employee Attrition dataset (1,470 employees, 35 attributes), covering the full path from raw CSV to an interactive dashboard.
 
----
+The dataset ships as a single flat file. I split it into five normalized tables joined on `EmployeeID`, wrote the SQL to analyze it, cross-checked the numbers in Excel, and built a Power BI report on top.
 
-## 🎯 Project Overview
+## 🧰 Stack
 
-This project simulates a real-world HR analytics workflow: cleaning and structuring raw data, exploring it with SQL, validating findings in Excel, and delivering an interactive Power BI dashboard for stakeholders.
-
-**Tools used:** PostgreSQL · Microsoft Excel · Power BI · DAX
-
----
+PostgreSQL, Microsoft Excel, Power BI (DAX)
 
 ## 🗂️ Data Model
 
-The original flat dataset was normalized into 5 relational tables, joined on `EmployeeID`:
-
-| Table | Description |
+| Table | Columns |
 |---|---|
 | `demographics` | Age, Gender, Department, JobRole, Education, MaritalStatus |
 | `employment` | BusinessTravel, OverTime, YearsAtCompany, YearsInCurrentRole, TotalWorkingYears, YearsSinceLastPromotion |
@@ -24,70 +18,64 @@ The original flat dataset was normalized into 5 relational tables, joined on `Em
 | `satisfaction` | JobSatisfaction, EnvironmentSatisfaction, WorkLifeBalance, JobInvolvement, PerformanceRating |
 | `attrition` | Attrition (Yes/No) |
 
-`demographics` acts as the hub table, with 1:1 relationships out to the other four — a clean star-schema structure.
+`demographics` is the hub table. Everything else has a 1:1 relationship back to it through `EmployeeID`.
 
----
+## 🗄️ SQL
 
-## 🧱 Tech Stack & Workflow
+`schema.sql` defines the five tables with foreign keys back to `demographics`.
 
-### 1. SQL (PostgreSQL)
-- Designed schema with primary/foreign keys across all 5 tables
-- Wrote 18 analysis queries, tiered from basic aggregates to advanced window functions:
-  - Simple: attrition rate, headcount by department, average income by role
-  - Intermediate: attrition rate by OverTime/income band/tenure bucket, satisfaction comparisons
-  - Advanced: `RANK()`, `NTILE()`, `LAG()`, correlated subqueries, CTEs, and a multi-factor "flight risk" flag
-- Built a reusable `employee_full` view joining all 5 tables for downstream tools
+`insight_queries.sql` has 18 queries, roughly in order of difficulty:
+- Basic aggregates: headcount, average income by role, attrition counts
+- Grouped comparisons: attrition rate by department, overtime, income band, tenure bucket
+- Window functions and CTEs: `RANK()` on job roles, `NTILE()` for income quartiles, `LAG()` across tenure years, and a combined flight-risk flag (overtime + low satisfaction + no recent promotion)
 
-### 2. Excel
-- Data validation (nulls, duplicates, category consistency)
-- Calculated helper columns: `TenureBucket`, `IncomeBand`, `AttritionFlag`
-- PivotTables/PivotCharts cross-validating the same insights surfaced in SQL
+There's also an `employee_full` view that joins all five tables, which is what Power BI/Excel pull from instead of five separate joins.
 
-### 3. Power BI
-- Star-schema data model (5 tables, EmployeeID relationships)
-- Custom DAX measures: `Attrition Rate %`, `Avg Monthly Income`, `High Risk Employee Count`, and more
-- 5-page interactive report:
-  1. **Overview** — KPIs, attrition split, headline drivers
-  2. **Department & Role** — attrition rate by department/job role, drill-down matrix
-  3. **Compensation & Tenure** — income bands, tenure buckets, salary hike, income-vs-attrition scatter
-  4. **Satisfaction & Work-Life** — job satisfaction, environment, work-life balance vs attrition
-  5. **Risk Insights** — a custom "high flight-risk" flag (OverTime + low satisfaction + no recent promotion) surfaced in a dedicated table and comparison chart
+## 📈 Excel
 
----
+Added three calculated columns to make the buckets consistent everywhere they're used:
+- `TenureBucket` (0-2 / 3-5 / 6-10 / 10+ years)
+- `IncomeBand` (<3000 / 3000-5999 / 6000-9999 / 10000+)
+- `AttritionFlag` (1/0 version of Attrition, for quick averaging in pivots)
 
-## 🖼️ Dashboard Preview
+Used these in a few PivotTables to sanity-check the SQL output against a second method.
 
-**Overview**
+## 📊 Power BI
+
+Five pages:
+
+1. **Overview**: headline KPIs and the three strongest attrition drivers
+2. **Department & Role**: attrition broken down by department and job role, plus a department × overtime view
+3. **Compensation & Tenure**: income bands, tenure buckets, salary hike, and an income-vs-attrition scatter by role
+4. **Satisfaction & Work-Life**: job satisfaction, environment, and work-life balance against attrition
+5. **Risk Insights**: a high-risk flag (overtime + low satisfaction + no promotion in 3+ years), with a table of flagged employees and a comparison against the company-wide rate
+
+### Overview
 ![Overview page](images/page1_overview.png)
 
-**Department & Role**
+### Department & Role
 ![Department & Role page](images/page2_department_role.png)
 
-**Compensation & Tenure**
+### Compensation & Tenure
 ![Compensation & Tenure page](images/page3_compensation_tenure.png)
 
-**Satisfaction & Work-Life**
+### Satisfaction & Work-Life
 ![Satisfaction & Work-Life page](images/page4_satisfaction.png)
 
-**Risk Insights**
+### Risk Insights
 ![Risk Insights page](images/page5_risk_insights.png)
 
----
+## 🔑 What the data shows
 
-## 🔑 Key Insights
+Overall attrition sits at **16.1%**, but it's not evenly spread:
 
-| Finding | Detail |
-|---|---|
-| **Baseline attrition rate** | ~16.1% of employees left |
-| **OverTime is the single strongest driver** | 30.5% attrition (OverTime = Yes) vs 10.4% (No) |
-| **New hires are highest-risk** | 29.8% attrition in the 0–2 year tenure bucket |
-| **Low pay compounds risk** | 28.6% attrition in the lowest income band (<$3000/month) |
-| **Sales has the highest departmental attrition** | ~20.6%, followed by HR (~19%) and R&D (~13.8%) |
-| **High-risk segment** | Employees flagged as high-risk (OverTime + low satisfaction + no recent promotion) leave at roughly **2.8x** the company-wide rate |
+- **Overtime is the biggest single factor.** Employees working overtime leave at 30.5%, versus 10.4% for those who don't.
+- **Tenure matters early.** Employees in their first two years leave at 29.8%, well above every other bracket.
+- **Pay compounds it.** The lowest income band (<$3,000/month) sees 28.6% attrition.
+- **Sales has the highest department-level attrition** at 20.6%, ahead of HR (19%) and R&D (13.8%).
+- Employees who hit all three risk factors at once (overtime, low satisfaction, no recent promotion) leave at close to **2.8x** the baseline rate.
 
----
-
-## 📁 Repository Structure
+## 📁 Repository structure
 
 ```
 ├── data/
@@ -97,10 +85,10 @@ The original flat dataset was normalized into 5 relational tables, joined on `Em
 │   ├── satisfaction.csv
 │   └── attrition.csv
 ├── sql/
-│   ├── schema.sql              # Table definitions + foreign keys
-│   ├── queries.sql              # Core starter queries + employee_full view
+│   ├── schema.sql
+│   └── insight_queries.sql
 ├── excel/
-│   └── hr_attrition_analysis.xlsx   # Helper columns + PivotTables
+│   └── hr_attrition_analysis.xlsx
 ├── powerbi/
 │   └── hr_attrition_dashboard.pbix
 ├── images/
@@ -112,21 +100,14 @@ The original flat dataset was normalized into 5 relational tables, joined on `Em
 └── README.md
 ```
 
----
+## 🚀 Running it yourself
 
-## 🚀 How to Reproduce
-
-1. **Load the data:** run `sql/schema.sql` to create the tables, then load each CSV in `data/` in this order (respects foreign keys): `demographics → employment → compensation → satisfaction → attrition`
-2. **Run the analysis:** execute `sql/insight_queries.sql` against your database to reproduce every insight above
-3. **Open the dashboard:** open `powerbi/hr_attrition_dashboard.pbix` in Power BI Desktop, update the data source connection to your local Postgres instance, and refresh
-
----
+1. Run `sql/schema.sql` to create the tables.
+2. Load the CSVs from `data/` in this order (child tables reference `demographics`, so it has to go first): `demographics → employment → compensation → satisfaction → attrition`.
+3. Run `sql/insight_queries.sql` to reproduce the numbers above.
+4. Open `powerbi/hr_attrition_dashboard.pbix`, point the data source at your local Postgres instance, and refresh.
 
 ## 📌 Notes
 
-- Dataset source: [IBM HR Analytics Employee Attrition & Performance](https://www.kaggle.com/datasets/pavansubhasht/ibm-hr-analytics-attrition-dataset) (synthetic data created by IBM data scientists)
-- `EmployeeNumber` was renamed to `EmployeeID` for clarity and consistency across all three tools
-
----
-
-*Built as a hands-on project to practice relational data modeling, SQL analysis, and BI dashboard design end-to-end.*
+- Dataset: [IBM HR Analytics Employee Attrition & Performance](https://www.kaggle.com/datasets/pavansubhasht/ibm-hr-analytics-attrition-dataset), synthetic data released by IBM.
+- The original `EmployeeNumber` column was renamed to `EmployeeID` for consistency across all three tools.
