@@ -24,7 +24,7 @@ PostgreSQL, Microsoft Excel, Power BI (DAX)
 
 `schema.sql` defines the five tables with foreign keys back to `demographics`.
 
-`insight_queries.sql` has 18 queries, roughly in order of difficulty:
+`queries.sql` has 18 queries, roughly in order of difficulty:
 - Basic aggregates: headcount, average income by role, attrition counts
 - Grouped comparisons: attrition rate by department, overtime, income band, tenure bucket
 - Window functions and CTEs: `RANK()` on job roles, `NTILE()` for income quartiles, `LAG()` across tenure years, and a combined flight-risk flag (overtime + low satisfaction + no recent promotion)
@@ -86,7 +86,7 @@ Overall attrition sits at **16.1%**, but it's not evenly spread:
 │   └── attrition.csv
 ├── sql/
 │   ├── schema.sql
-│   └── insight_queries.sql
+│   └── queries.sql
 ├── excel/
 │   └── hr_attrition_analysis.xlsx
 ├── powerbi/
